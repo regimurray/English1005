@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ENG 1005 · Grammar &amp; Mechanics Exam</title>
+<style>
+  :root{
+    --blue-900:#0a2540;
+    --blue-800:#10355c;
+    --blue-700:#1b4f8a;
+    --blue-600:#2563b0;
+    --blue-500:#3a7bd5;
+    --blue-300:#9cc3ef;
+    --blue-100:#e7f0fb;
+    --blue-50:#f3f8ff;
+    --ink:#13243a;
+    --good:#1f8a4c;
+    --good-bg:#e6f6ec;
+    --bad:#c0392b;
+    --bad-bg:#fdecea;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+    background:linear-gradient(160deg,var(--blue-50),#dbe9fb);
+    color:var(--ink);
+    line-height:1.5;
+    padding:24px 14px 80px;
+  }
+  .wrap{max-width:860px;margin:0 auto;}
+  header.exam{
+    background:linear-gradient(135deg,var(--blue-800),var(--blue-600));
+    color:#fff;
+    border-radius:16px;
+    padding:28px 30px;
+    box-shadow:0 10px 30px rgba(16,53,92,.25);
+  }
+  header.exam h1{margin:0 0 4px;font-size:1.45rem;letter-spacing:.3px;}
+  header.exam h2{margin:0 0 14px;font-size:1.05rem;font-weight:500;opacity:.95;}
+  header.exam p.meta{margin:0;font-size:.9rem;opacity:.9;}
+  .namebar{
+    display:flex;flex-wrap:wrap;gap:14px;margin-top:18px;
+  }
+  .namebar label{font-size:.85rem;display:flex;flex-direction:column;gap:4px;flex:1 1 200px;}
+  .namebar input{
+    border:none;border-radius:8px;padding:9px 11px;font-size:.95rem;
+  }
+  .directions{
+    background:var(--blue-100);
+    border-left:5px solid var(--blue-500);
+    border-radius:8px;
+    padding:12px 16px;
+    margin:22px 0;
+    font-size:.92rem;
+  }
+  section.qsec{
+    background:#fff;
+    border-radius:14px;
+    padding:20px 24px;
+    margin:18px 0;
+    box-shadow:0 4px 14px rgba(16,53,92,.08);
+    border:1px solid #dce8f6;
+  }
+  section.qsec h3{
+    color:var(--blue-700);
+    border-bottom:2px solid var(--blue-100);
+    padding-bottom:8px;margin:0 0 6px;font-size:1.1rem;
+  }
+  section.qsec .secdir{font-size:.88rem;color:#46586e;margin:0 0 14px;}
+  .q{margin:16px 0;padding:14px 16px;border-radius:10px;background:var(--blue-50);border:1px solid #e2edfa;}
+  .q .stem{font-weight:600;margin-bottom:10px;}
+  .q .stem .num{color:var(--blue-600);}
+  .opts{display:flex;flex-direction:column;gap:7px;}
+  .opt{
+    display:flex;gap:10px;align-items:flex-start;
+    padding:9px 12px;border-radius:8px;border:1.5px solid #d3e2f5;
+    background:#fff;cursor:pointer;transition:.12s;font-size:.95rem;
+  }
+  .opt:hover{border-color:var(--blue-500);background:var(--blue-50);}
+  .opt input{margin-top:3px;accent-color:var(--blue-600);}
+  .opt .ltr{font-weight:700;color:var(--blue-700);}
+  .opt.correct{background:var(--good-bg);border-color:var(--good);}
+  .opt.wrong{background:var(--bad-bg);border-color:var(--bad);}
+  .opt.locked{cursor:default;}
+  .opt.locked:hover{border-color:#d3e2f5;background:#fff;}
+  .opt.locked.correct:hover{background:var(--good-bg);border-color:var(--good);}
+  .opt.locked.wrong:hover{background:var(--bad-bg);border-color:var(--bad);}
+  blockquote.passage{
+    background:#fff;border-left:4px solid var(--blue-400,#5b93d6);
+    margin:0 0 14px;padding:12px 16px;border-radius:8px;font-style:italic;
+    border:1px solid #dce8f6;border-left:4px solid var(--blue-500);
+  }
+  .actions{text-align:center;margin:30px 0 10px;}
+  button#submit{
+    background:linear-gradient(135deg,var(--blue-600),var(--blue-500));
+    color:#fff;border:none;border-radius:30px;padding:14px 40px;
+    font-size:1.05rem;font-weight:600;cursor:pointer;letter-spacing:.4px;
+    box-shadow:0 6px 18px rgba(37,99,176,.4);transition:.15s;
+  }
+  button#submit:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(37,99,176,.5);}
+  button#submit:disabled{background:#9fb4cc;cursor:not-allowed;box-shadow:none;transform:none;}
+  .result{
+    display:none;text-align:center;border-radius:16px;padding:26px;margin:18px 0;
+    background:linear-gradient(135deg,var(--blue-800),var(--blue-600));color:#fff;
+    box-shadow:0 10px 30px rgba(16,53,92,.3);
+  }
+  .result.show{display:block;}
+  .result .score{font-size:3rem;font-weight:800;margin:6px 0;}
+  .result .detail{font-size:1rem;opacity:.95;}
+  .result .name{font-size:1.05rem;font-weight:600;margin-bottom:6px;}
+  .banner{
+    display:none;background:var(--blue-100);border:1px solid var(--blue-300);
+    color:var(--blue-800);border-radius:10px;padding:14px 18px;margin:18px 0;
+    font-size:.95rem;text-align:center;
+  }
+  .banner.show{display:block;}
+  .warn{color:var(--bad);font-size:.85rem;text-align:center;margin-top:10px;min-height:1.1em;}
+  footer{text-align:center;font-size:.78rem;color:#5b6e85;margin-top:30px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="exam">
+    <h1>ENG 1005 · Writing About Mystery and Thriller</h1>
+    <h2>Sentence Structure, Grammar, and Mechanics Exam</h2>
+    <p class="meta">Worth 10% of your course grade · graded as a percentage · one attempt only</p>
+    <div class="namebar">
+      <label>Name
+        <input type="text" id="studentName" placeholder="Your full name" autocomplete="off">
+      </label>
+      <label>Date
+        <input type="text" id="examDate" placeholder="Today's date" autocomplete="off">
+      </label>
+    </div>
+  </header>
+
+  <div class="banner" id="lockBanner"></div>
+
+  <div class="directions">
+    <strong>Directions:</strong> Each question has one best answer. Select the letter of the correct
+    choice. Read every option before answering. When you are finished, click <em>Submit Exam</em>.
+    <strong>You may only take this exam once</strong> — once you submit, your score is recorded and
+    the exam will lock.
+  </div>
+
+  <form id="examForm"></form>
+
+  <div class="warn" id="warn"></div>
+  <div class="actions">
+    <button type="button" id="submit">Submit Exam</button>
+  </div>
+
+  <div class="result" id="result">
+    <div class="name" id="resName"></div>
+    <div>Your Score</div>
+    <div class="score" id="resScore"></div>
+    <div class="detail" id="resDetail"></div>
+  </div>
+
+  <footer>ENG 1005 &middot; Mystery &amp; Thriller &middot; Grammar &amp; Mechanics Exam</footer>
+</div>
+
+<script>
+// ---- Exam data. Each question: section, stem, options[], answer index (0=A,1=B,...) ----
+const EXAM = [
+ {title:"Section A — Sentence Grammar (10%)",
+  dir:"For each word group, choose whether it is an independent clause (IC) — a complete thought that can stand alone — or a subordinate clause (SC) — a dependent thought that cannot stand alone.",
+  q:[
+   {s:"When the detective examined the muddy footprints",o:["Independent clause (IC)","Subordinate clause (SC)"],a:1},
+   {s:"The butler had vanished before midnight",o:["Independent clause (IC)","Subordinate clause (SC)"],a:0},
+   {s:"Because the will named an unexpected heir",o:["Independent clause (IC)","Subordinate clause (SC)"],a:1},
+   {s:"Three guests refused to leave the locked study",o:["Independent clause (IC)","Subordinate clause (SC)"],a:0},
+   {s:"Although the alibi seemed airtight",o:["Independent clause (IC)","Subordinate clause (SC)"],a:1}
+ ]},
+ {title:"Section B — Sentence Fragments (10%)",
+  dir:"Choose the answer that correctly labels the item and, if it is a fragment, gives the best complete sentence.",
+  q:[
+   {s:"Hiding in the shadows near the conservatory.",o:["Complete sentence; no change needed.","Fragment → The killer was hiding in the shadows near the conservatory.","Fragment → Hiding in the shadows. Near the conservatory.","Fragment → Hiding in the shadows near the conservatory, quietly."],a:1},
+   {s:"The inspector questioned every suspect twice.",o:["Complete sentence; no change needed.","Fragment → Because the inspector questioned every suspect twice.","Fragment → The inspector questioning every suspect twice.","Fragment → Questioned every suspect twice."],a:0},
+   {s:"Which explained the missing key.",o:["Complete sentence; no change needed.","Fragment → Which explained the missing key, finally.","Fragment → The hidden compartment explained the missing key.","Fragment → Which, of course, explained the missing key."],a:2},
+   {s:"Because no one had heard the gunshot.",o:["Complete sentence; no change needed.","Fragment → Because no one had heard the gunshot, the body lay undiscovered for hours.","Fragment → Because no one had heard the gunshot at all.","Fragment → No one. Because they had not heard the gunshot."],a:1},
+   {s:"A single clue remained on the desk.",o:["Complete sentence; no change needed.","Fragment → A single clue. Remaining on the desk.","Fragment → Although a single clue remained on the desk.","Fragment → A single clue remaining on the desk."],a:0}
+ ]},
+ {title:"Section C — Comma Splices and Fused Sentences (10%)",
+  dir:"Choose the answer that correctly labels the error — comma splice (CS) or fused/run-on (FS) — and gives a correct revision.",
+  q:[
+   {s:"The lights went out, no one screamed.",o:["Comma splice → The lights went out, but no one screamed.","Fused sentence → The lights went out no one screamed.","Comma splice → The lights went out, no one, screamed.","Correct as written."],a:0},
+   {s:"The clock struck twelve the body was discovered.",o:["Comma splice → The clock struck twelve, the body was discovered.","Fused sentence → When the clock struck twelve, the body was discovered.","Fused sentence → The clock struck twelve the body, was discovered.","Correct as written."],a:1},
+   {s:"She suspected the gardener he had motive and opportunity.",o:["Comma splice → She suspected the gardener, he had motive and opportunity.","Fused sentence → She suspected the gardener; he had motive and opportunity.","Fused sentence → She suspected the gardener he had, motive and opportunity.","Correct as written."],a:1},
+   {s:"The note was unsigned, it pointed to an inside job.",o:["Comma splice → The note was unsigned, but it pointed to an inside job.","Fused sentence → The note was unsigned it pointed to an inside job.","Comma splice → The note was unsigned it, pointed to an inside job.","Correct as written."],a:0},
+   {s:"Detective Stone reread the letter then she called the station.",o:["Comma splice → Detective Stone reread the letter, then she called the station.","Fused sentence → Detective Stone reread the letter; then she called the station.","Fused sentence → Detective Stone reread the letter then, she called the station.","Correct as written."],a:1}
+ ]},
+ {title:"Section D — Commas (10%)",
+  dir:"Choose the sentence with commas placed correctly.",
+  q:[
+   {s:"",o:["After the storm passed, the investigators returned to the cliff house.","After the storm, passed the investigators returned to the cliff house.","After the storm passed the investigators, returned to the cliff house.","After, the storm passed the investigators returned to the cliff house."],a:0},
+   {s:"",o:["The suspect, tall pale and nervous avoided eye contact.","The suspect, tall, pale, and nervous, avoided eye contact.","The suspect tall, pale, and nervous avoided eye contact.","The suspect, tall, pale and nervous avoided, eye contact."],a:1},
+   {s:"",o:["Yes the safe, had been opened from the inside.","Yes, the safe had been opened from the inside.","Yes the safe had been opened, from the inside.","Yes, the safe had been opened, from the inside."],a:1},
+   {s:"",o:["Agatha Christie who wrote And Then There Were None, mastered the locked-room puzzle.","Agatha Christie, who wrote And Then There Were None, mastered the locked-room puzzle.","Agatha Christie, who wrote And Then There Were None mastered the locked-room puzzle.","Agatha Christie who wrote, And Then There Were None, mastered the locked-room puzzle."],a:1},
+   {s:"",o:["The maid found a torn ticket, a broken watch, and a bloody glove.","The maid found a torn ticket a broken watch, and a bloody glove.","The maid found, a torn ticket, a broken watch, and a bloody glove.","The maid found a torn ticket, a broken watch and, a bloody glove."],a:0}
+ ]},
+ {title:"Section E — Semicolons and Colons (10%)",
+  dir:"Choose the correctly punctuated version of each sentence.",
+  q:[
+   {s:"",o:["The evidence was overwhelming, the jury deliberated for only an hour.","The evidence was overwhelming; the jury deliberated for only an hour.","The evidence was overwhelming: the jury deliberated for only an hour.","The evidence was overwhelming the jury; deliberated for only an hour."],a:1},
+   {s:"",o:["Only three suspects remained; the cook, the chauffeur, and the niece.","Only three suspects remained: the cook, the chauffeur, and the niece.","Only three suspects remained, the cook, the chauffeur, and the niece.","Only three suspects: remained the cook, the chauffeur, and the niece."],a:1},
+   {s:"",o:["The detective had one rule; never trust a calm witness.","The detective had one rule: never trust a calm witness.","The detective had one rule, never trust a calm witness.","The detective had: one rule never trust a calm witness."],a:1},
+   {s:"",o:["The first clue was subtle; however, no one noticed it.","The first clue was subtle, however no one noticed it.","The first clue was subtle: however, no one noticed it.","The first clue was subtle however; no one noticed it."],a:0},
+   {s:"",o:["She packed her kit; a magnifying glass, gloves, and a worn notebook.","She packed her kit: a magnifying glass, gloves, and a worn notebook.","She packed her kit, a magnifying glass, gloves, and a worn notebook.","She packed: her kit a magnifying glass, gloves, and a worn notebook."],a:1}
+ ]},
+ {title:"Section F — Coordination and Subordination (10%)",
+  dir:"Choose the answer that combines the two sentences into ONE smooth, correctly punctuated sentence.",
+  q:[
+   {s:"The window was locked. The intruder still got in.",o:["Although the window was locked, the intruder still got in.","The window was locked the intruder still got in.","The window was locked, the intruder still got in.","The window was locked, so the intruder still got in."],a:0},
+   {s:"The alarm failed. The night guard had fallen asleep.",o:["The alarm failed, the night guard had fallen asleep.","The alarm failed because the night guard had fallen asleep.","The alarm failed the night guard had fallen asleep.","The alarm failed, although the night guard had fallen asleep, too."],a:1},
+   {s:"The letter arrived on Monday. It changed the entire case.",o:["The letter arrived on Monday it changed the entire case.","The letter arrived on Monday, it changed the entire case.","The letter, which arrived on Monday, changed the entire case.","The letter arrived on Monday, so changing the entire case."],a:2}
+ ]},
+ {title:"Section G — Parallelism (10%)",
+  dir:"Choose the sentence with correct parallel structure.",
+  q:[
+   {s:"",o:["The detective was clever, observant, and acted with caution.","The detective was clever, observant, and cautious.","The detective was clever, observing, and acted with caution.","The detective was a clever, observant, and acted cautiously."],a:1},
+   {s:"",o:["She liked solving puzzles, to question suspects, and the thrill of the chase.","She liked solving puzzles, questioning suspects, and chasing leads.","She liked solving puzzles, to question suspects, and chasing the thrill.","She liked to solve puzzles, questioning suspects, and the chase."],a:1},
+   {s:"",o:["The plan required patience, courage, and being lucky.","The plan required patience, courage, and luck.","The plan required patience, to be brave, and luck.","The plan required being patient, courage, and luck."],a:1},
+   {s:"",o:["He not only forged the will but also was hiding the body.","He not only forged the will but also hid the body.","He not only forging the will but also hid the body.","He not only forged the will but also the body was hidden."],a:1}
+ ]},
+ {title:"Section H — Misplaced and Dangling Modifiers (10%)",
+  dir:"Choose the sentence in which the modifier is placed correctly and the meaning is clear.",
+  q:[
+   {s:"",o:["Covered in dust, the detective found the old diary.","The detective found the old diary, which was covered in dust.","Covered in dust, the old diary was found by the detective who was clean.","The detective found, covered in dust, the old diary by herself."],a:1},
+   {s:"",o:["The witness described the suspect who fled in a trembling voice.","In a trembling voice, the witness described the suspect who fled.","The witness described, in a trembling voice the suspect who fled.","The witness, who fled, described the suspect in a trembling voice."],a:1},
+   {s:"",o:["Running down the corridor, the lights suddenly went out.","As she ran down the corridor, the lights suddenly went out.","Running down the corridor, suddenly the lights went out.","The lights, running down the corridor, suddenly went out."],a:1},
+   {s:"",o:["We almost solved every clue in the file.","We solved almost every clue in the file.","We almost solved every clue in the file almost.","Almost we solved every clue in the file."],a:1}
+ ]},
+ {title:"Section I — Agreement and Pronoun Case (10%)",
+  dir:"Choose the correct word to complete each sentence.",
+  q:[
+   {s:"Each of the suspects ______ an alibi.",o:["has","have"],a:0},
+   {s:"Neither the maid nor the twins ______ in the room.",o:["was","were"],a:1},
+   {s:"The jury reached ______ verdict.",o:["its","their"],a:0},
+   {s:"Between you and ______, the butler is lying.",o:["I","me"],a:1},
+   {s:"The detective handed the file to Watson and ______.",o:["I","me"],a:1},
+   {s:"Everyone must account for ______ whereabouts.",o:["his or her","their"],a:0}
+ ]},
+ {title:"Section J — Editing Passage (10%)",
+  dir:"Read the original paragraph, then answer the questions about how to correct it.",
+  passage:"The storm had knocked out the power, the guests gathered in the candlelit parlor. Each of them were nervous. Sitting in the corner the detective watched everyone carefully. She noticed a torn glove a muddy boot and footprints leading to the library. Which seemed important. The host insisted that no one leave however the front door stood wide open.",
+  q:[
+   {s:"“The storm had knocked out the power, the guests gathered in the candlelit parlor.” This sentence is a:",o:["Correctly punctuated sentence","Comma splice","Fragment","Dangling modifier"],a:1},
+   {s:"What is the best correction for the sentence in question 1?",o:["The storm had knocked out the power the guests gathered in the candlelit parlor.","When the storm knocked out the power, the guests gathered in the candlelit parlor.","The storm had knocked out the power, the guests, gathered in the candlelit parlor.","The storm had knocked out the power; gathering the guests in the candlelit parlor."],a:1},
+   {s:"“Each of them were nervous.” The correct version is:",o:["Each of them were nervous.","Each of them was nervous.","Each of them are nervous.","Each of them being nervous."],a:1},
+   {s:"“Sitting in the corner the detective watched everyone carefully.” The best correction is:",o:["Sitting in the corner, the detective watched everyone carefully.","Sitting in the corner the detective, watched everyone carefully.","Sitting in the corner the detective watched, everyone carefully.","The detective watched everyone carefully sitting in the corner."],a:0},
+   {s:"“She noticed a torn glove a muddy boot and footprints leading to the library.” The correctly punctuated version is:",o:["She noticed a torn glove a muddy boot, and footprints leading to the library.","She noticed a torn glove, a muddy boot, and footprints leading to the library.","She noticed, a torn glove, a muddy boot, and footprints leading to the library.","She noticed a torn glove, a muddy boot and, footprints leading to the library."],a:1},
+   {s:"“Which seemed important.” This word group is a fragment. The best fix is to:",o:["Leave it as its own sentence; it is fine.","Join it to the previous sentence: “...footprints leading to the library, which seemed important.”","Capitalize it: “Which Seemed Important.”","Add a comma: “Which, seemed important.”"],a:1},
+   {s:"“The host insisted that no one leave however the front door stood wide open.” The best correction is:",o:["The host insisted that no one leave, however the front door stood wide open.","The host insisted that no one leave; however, the front door stood wide open.","The host insisted that no one leave however, the front door stood wide open.","The host insisted that no one leave however the front door, stood wide open."],a:1}
+ ]}
+];
+
+const STORAGE_KEY = "eng1005_grammar_exam_result_v1";
+const LETTERS = ["A","B","C","D","E"];
+let qIndex = 0;
+const qMeta = []; // {sec, num, answer, name}
+
+// ---- Render exam ----
+const form = document.getElementById("examForm");
+EXAM.forEach(sec=>{
+  const secEl = document.createElement("section");
+  secEl.className = "qsec";
+  const h = document.createElement("h3");
+  h.textContent = sec.title;
+  secEl.appendChild(h);
+  if(sec.dir){const d=document.createElement("p");d.className="secdir";d.textContent=sec.dir;secEl.appendChild(d);}
+  if(sec.passage){const bq=document.createElement("blockquote");bq.className="passage";bq.textContent=sec.passage;secEl.appendChild(bq);}
+  sec.q.forEach((q,i)=>{
+    const name = "q"+qIndex;
+    qMeta.push({answer:q.a,name:name});
+    const qEl = document.createElement("div");
+    qEl.className="q";qEl.id="block_"+name;
+    const stem = document.createElement("div");
+    stem.className="stem";
+    stem.innerHTML = '<span class="num">'+(i+1)+'.</span> '+escapeHtml(q.s);
+    qEl.appendChild(stem);
+    const opts = document.createElement("div");
+    opts.className="opts";
+    q.o.forEach((optText,oi)=>{
+      const lbl = document.createElement("label");
+      lbl.className="opt";lbl.dataset.idx=oi;
+      lbl.innerHTML='<input type="radio" name="'+name+'" value="'+oi+'">'
+        +'<span class="ltr">'+LETTERS[oi]+'.</span>'
+        +'<span class="txt">'+escapeHtml(optText)+'</span>';
+      opts.appendChild(lbl);
+    });
+    qEl.appendChild(opts);
+    secEl.appendChild(qEl);
+    qIndex++;
+  });
+  form.appendChild(secEl);
+});
+
+function escapeHtml(t){return (t||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+
+// ---- Lock check on load ----
+const submitBtn = document.getElementById("submit");
+const lockBanner = document.getElementById("lockBanner");
+checkLock();
+
+function checkLock(){
+  let saved=null;
+  try{saved=JSON.parse(localStorage.getItem(STORAGE_KEY));}catch(e){}
+  if(saved && typeof saved.percent==="number"){
+    lockBanner.classList.add("show");
+    lockBanner.innerHTML="This exam has already been completed"
+      +(saved.name?(" by <strong>"+escapeHtml(saved.name)+"</strong>"):"")
+      +". Your recorded score is <strong>"+saved.percent+"%</strong>. The exam cannot be retaken.";
+    revealAndLock(saved.answers||{}, true, saved);
+  }
+}
+
+// ---- Submit ----
+submitBtn.addEventListener("click", ()=>{
+  const warn = document.getElementById("warn");
+  const answers = {};
+  let unanswered = 0;
+  qMeta.forEach(m=>{
+    const sel = form.querySelector('input[name="'+m.name+'"]:checked');
+    if(sel){answers[m.name]=parseInt(sel.value,10);} else {unanswered++;}
+  });
+  if(unanswered>0){
+    warn.textContent="Please answer all questions before submitting. ("+unanswered+" remaining)";
+    return;
+  }
+  warn.textContent="";
+  if(!confirm("Submit your exam? You can only take this once and cannot change your answers afterward.")) return;
+
+  let correct=0;
+  qMeta.forEach(m=>{ if(answers[m.name]===m.answer) correct++; });
+  const total=qMeta.length;
+  const percent=Math.round((correct/total)*100);
+  const name=document.getElementById("studentName").value.trim();
+  const date=document.getElementById("examDate").value.trim();
+
+  const record={name:name,date:date,correct:correct,total:total,percent:percent,answers:answers,submittedAt:new Date().toISOString()};
+  try{localStorage.setItem(STORAGE_KEY, JSON.stringify(record));}catch(e){}
+
+  revealAndLock(answers, false, record);
+  showResult(record);
+  document.getElementById("result").scrollIntoView({behavior:"smooth",block:"center"});
+});
+
+function showResult(rec){
+  const r=document.getElementById("result");
+  r.classList.add("show");
+  document.getElementById("resName").textContent = rec.name? rec.name : "";
+  document.getElementById("resScore").textContent = rec.percent+"%";
+  document.getElementById("resDetail").textContent =
+    rec.correct+" of "+rec.total+" correct"+(rec.date?(" · "+rec.date):"");
+}
+
+function revealAndLock(answers, alreadyDone, rec){
+  // disable all inputs, show correct/wrong
+  qMeta.forEach(m=>{
+    const block=document.getElementById("block_"+m.name);
+    const labels=block.querySelectorAll(".opt");
+    const chosen = (m.name in answers)? answers[m.name] : null;
+    labels.forEach(lbl=>{
+      const idx=parseInt(lbl.dataset.idx,10);
+      const input=lbl.querySelector("input");
+      input.disabled=true;
+      lbl.classList.add("locked");
+      if(idx===m.answer) lbl.classList.add("correct");
+      if(chosen!==null && idx===chosen){
+        input.checked=true;
+        if(chosen!==m.answer) lbl.classList.add("wrong");
+      }
+    });
+  });
+  submitBtn.disabled=true;
+  submitBtn.textContent = alreadyDone? "Exam Completed" : "Submitted";
+  const ni=document.getElementById("studentName");
+  const di=document.getElementById("examDate");
+  if(ni){ni.disabled=true; if(rec&&rec.name) ni.value=rec.name;}
+  if(di){di.disabled=true; if(rec&&rec.date) di.value=rec.date;}
+  if(alreadyDone && rec) showResult(rec);
+}
+</script>
+</body>
+</html>
