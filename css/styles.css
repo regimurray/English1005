@@ -65,6 +65,18 @@ body{
 .note{display:flex;gap:12px;align-items:flex-start;margin:24px 0 26px;padding:14px 16px;background:var(--ice);border:1px solid var(--ice-2);border-radius:14px;font-size:.9rem;color:#3a4d66;line-height:1.55;}
 .note svg{flex:0 0 auto;width:20px;height:20px;color:var(--blue-600);margin-top:1px;}
 
+/* ---------- Study materials / resource links ---------- */
+.resources{margin-top:30px;border-top:1px solid var(--line);padding-top:24px;}
+.resources h2{font-size:1.1rem;margin:0 0 4px;color:var(--navy);}
+.res-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;}
+@media(max-width:560px){.res-grid{grid-template-columns:1fr;}}
+.res{display:flex;align-items:center;gap:13px;padding:13px 15px;border:1.6px solid var(--line);border-radius:12px;text-decoration:none;color:var(--ink);background:var(--ice);transition:.14s;}
+.res:hover{border-color:var(--blue-500);background:#fff;box-shadow:var(--shadow-sm);transform:translateY(-1px);}
+.res .ic{flex:0 0 auto;width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--navy),var(--blue-600));color:#fff;display:grid;place-items:center;font-weight:700;font-size:.68rem;letter-spacing:.05em;}
+.res .rtext{display:flex;flex-direction:column;line-height:1.3;}
+.res .rt{font-weight:600;font-size:.95rem;}
+.res .rs{font-size:.8rem;color:var(--muted);}
+
 /* ---------- Buttons ---------- */
 .btn{appearance:none;border:none;cursor:pointer;font-family:inherit;font-weight:600;border-radius:999px;transition:.16s;display:inline-flex;align-items:center;justify-content:center;gap:9px;}
 .btn-primary{background:linear-gradient(135deg,var(--blue-600),var(--blue-400));color:#fff;font-size:1.04rem;padding:15px 34px;box-shadow:0 12px 24px -8px rgba(37,99,235,.65);}
