@@ -137,15 +137,22 @@ function showResult(rec){
 }
 
 function revealAnswers(rec){
+  // Show the student ONLY their own answer marked right/wrong.
+  // The correct option is never revealed for missed questions —
+  // the instructor reviews those in class.
   qMeta.forEach(m=>{
     const block=$("block_"+m.name);
     const chosen=rec.answers[m.name];
+    const gotItRight = chosen===m.answer;
     block.querySelectorAll(".opt").forEach(lbl=>{
       const idx=parseInt(lbl.dataset.idx,10);
       const input=lbl.querySelector("input");input.disabled=true;
       lbl.classList.add("locked");lbl.classList.remove("sel");
-      if(idx===m.answer){lbl.classList.add("correct");addTag(lbl,"Correct");}
-      if(chosen!=null&&idx===chosen){input.checked=true;if(chosen!==m.answer){lbl.classList.add("wrong");addTag(lbl,"Your answer");}}
+      if(chosen!=null && idx===chosen){
+        input.checked=true;
+        if(gotItRight){ lbl.classList.add("correct"); addTag(lbl,"Correct"); }
+        else { lbl.classList.add("wrong"); addTag(lbl,"Incorrect"); }
+      }
     });
   });
   $("submitBtn").parentElement.classList.add("hidden");
