@@ -5,12 +5,21 @@
    answer-review mode, and enforces a single attempt per browser
    using localStorage.
    ============================================================ */
-const STORAGE_KEY="eng1005_grammar_exam_result_v2";
+const STORAGE_KEY="eng1005_grammar_exam_result_v3";
 const LETTERS=["A","B","C","D","E"];
 const $=id=>document.getElementById(id);
 const esc=t=>(t==null?"":String(t)).replace(/&amp;/g,"&").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 
-const qMeta=[]; // {name, answer, secIdx}
+// Answers are stored only as salted hashes (see questions.js). We grade by
+// hashing the student's selected option and comparing to the stored hash,
+// so the correct answers never appear in readable form in the code.
+const ANSWER_SALT="eng1005-mystery-thriller::v3::";
+async function sha256Hex(text){
+  const buf=await crypto.subtle.digest("SHA-256", new TextEncoder().encode(ANSWER_SALT+text));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+
+const qMeta=[]; // {name, hash, opts, secIdx}
 let total=0;
 
 // ---------- Build the exam form ----------
@@ -22,7 +31,7 @@ EXAM.forEach((sec,si)=>{
   if(sec.dir){const d=document.createElement("div");d.className="sec-dir-card";d.innerHTML=sec.dir;wrap.appendChild(d);}
   if(sec.passage){const p=document.createElement("blockquote");p.className="passage";p.textContent=sec.passage;wrap.appendChild(p);}
   sec.q.forEach((q,i)=>{
-    const name="q"+qi;qMeta.push({name:name,answer:q.a,secIdx:si});
+    const name="q"+qi;qMeta.push({name:name,hash:q.h,opts:q.o,secIdx:si});
     const card=document.createElement("div");card.className="q";card.id="block_"+name;
     let html='<div class="stem"><span class="num">'+(i+1)+'</span><span>'+(q.s?esc(q.s):'<em style="color:#5b7290">Choose the correct sentence.</em>')+'</span></div><div class="opts">';
     q.o.forEach((opt,oi)=>{
@@ -77,24 +86,31 @@ $("submitBtn").addEventListener("click",()=>{
     return;
   }
   if(!confirm("Submit your exam? You can take it only once, and answers can't be changed afterward.")) return;
-  grade();
+  $("submitBtn").disabled=true;
+  grade().catch(()=>{ $("submitBtn").disabled=false; $("warn").textContent="Something went wrong grading. Please try submitting again."; });
 });
 
-function grade(){
-  const answers={};let correct=0;
+async function grade(){
+  const answers={},correctMap={};
   const perSec=EXAM.map(s=>({correct:0,total:0,title:s.title,letter:s.letter}));
+  // record each student selection
   qMeta.forEach(m=>{
     const sel=form.querySelector('input[name="'+m.name+'"]:checked');
-    const val=sel?parseInt(sel.value,10):null;
-    answers[m.name]=val;
+    answers[m.name]=sel?parseInt(sel.value,10):null;
     perSec[m.secIdx].total++;
-    if(val===m.answer){correct++;perSec[m.secIdx].correct++;}
   });
+  // grade by hashing the chosen option and comparing to the stored hash
+  await Promise.all(qMeta.map(async m=>{
+    const val=answers[m.name];
+    correctMap[m.name] = (val!=null) && ((await sha256Hex(m.opts[val]))===m.hash);
+  }));
+  let correct=0;
+  qMeta.forEach(m=>{ if(correctMap[m.name]){correct++;perSec[m.secIdx].correct++;} });
   const percent=Math.round(correct/total*100);
   const rec={
     name:$("studentName").value.trim(),date:$("examDate").value.trim(),
     correct:correct,total:total,percent:percent,answers:answers,
-    perSec:perSec,submittedAt:new Date().toISOString()
+    correctMap:correctMap,perSec:perSec,submittedAt:new Date().toISOString()
   };
   try{localStorage.setItem(STORAGE_KEY,JSON.stringify(rec));}catch(e){}
   showResult(rec);
@@ -143,7 +159,7 @@ function revealAnswers(rec){
   qMeta.forEach(m=>{
     const block=$("block_"+m.name);
     const chosen=rec.answers[m.name];
-    const gotItRight = chosen===m.answer;
+    const gotItRight = !!(rec.correctMap && rec.correctMap[m.name]);
     block.querySelectorAll(".opt").forEach(lbl=>{
       const idx=parseInt(lbl.dataset.idx,10);
       const input=lbl.querySelector("input");input.disabled=true;
