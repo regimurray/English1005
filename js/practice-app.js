@@ -1,0 +1,163 @@
+/* ============================================================
+   ENG 1005 · Practice Quiz — application logic
+   Auto-grades the practice questions (like the exam) but is meant
+   for studying: it can be retaken, and the review shows the correct
+   answers so students can learn from their mistakes.
+   ============================================================ */
+const ANSWER_SALT="eng1005-mystery-thriller::v3::";
+const LETTERS=["A","B","C","D","E"];
+const $=id=>document.getElementById(id);
+const esc=t=>(t==null?"":String(t)).replace(/&amp;/g,"&").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+async function sha256Hex(text){
+  const buf=await crypto.subtle.digest("SHA-256", new TextEncoder().encode(ANSWER_SALT+text));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+
+const qMeta=[]; // {name, hash, opts, secIdx}
+let total=0;
+
+// ---------- Build the quiz form ----------
+const form=$("examForm");
+let qi=0;
+PRACTICE.forEach((sec,si)=>{
+  const wrap=document.createElement("section");wrap.className="qsec";
+  wrap.innerHTML='<div class="sec-head"><span class="sec-badge">'+sec.letter+'</span><h3>Section '+sec.letter+' — '+sec.title+'</h3></div>';
+  if(sec.dir){const d=document.createElement("div");d.className="sec-dir-card";d.innerHTML=sec.dir;wrap.appendChild(d);}
+  sec.q.forEach((q,i)=>{
+    const name="q"+qi;qMeta.push({name:name,hash:q.h,opts:q.o,secIdx:si});
+    const card=document.createElement("div");card.className="q";card.id="block_"+name;
+    let html='<div class="stem"><span class="num">'+(i+1)+'</span><span>'+(q.s?esc(q.s):'<em style="color:#5b7290">Choose the correct sentence.</em>')+'</span></div><div class="opts">';
+    q.o.forEach((opt,oi)=>{
+      html+='<label class="opt" data-idx="'+oi+'"><input type="radio" name="'+name+'" value="'+oi+'">'
+           +'<span class="marker">'+LETTERS[oi]+'</span><span class="txt">'+esc(opt)+'</span></label>';
+    });
+    html+='</div>';
+    card.innerHTML=html;
+    wrap.appendChild(card);
+    qi++;
+  });
+  form.appendChild(wrap);
+});
+total=qMeta.length;
+$("barCount").textContent="0 / "+total;
+
+form.addEventListener("change",e=>{
+  if(e.target.name && e.target.name.startsWith("q")){
+    const block=$("block_"+e.target.name);
+    block.querySelectorAll(".opt").forEach(o=>o.classList.remove("sel"));
+    e.target.closest(".opt").classList.add("sel");
+    block.classList.add("answered");
+    updateProgress();
+    $("warn").textContent="";
+  }
+});
+function answeredCount(){let n=0;qMeta.forEach(m=>{if(form.querySelector('input[name="'+m.name+'"]:checked'))n++;});return n;}
+function updateProgress(){
+  const n=answeredCount();
+  $("trackFill").style.width=(n/total*100)+"%";
+  $("barCount").textContent=n+" / "+total;
+}
+
+// ---------- Start ----------
+$("beginBtn").addEventListener("click",()=>{
+  $("screen-start").classList.add("hidden");
+  $("screen-exam").classList.remove("hidden");
+  $("screen-exam").classList.add("fade-in");
+  window.scrollTo({top:0,behavior:"auto"});
+});
+
+// ---------- Submit ----------
+$("submitBtn").addEventListener("click",()=>{
+  const remaining=total-answeredCount();
+  if(remaining>0){
+    $("warn").textContent="Please answer all questions before checking — "+remaining+" remaining.";
+    const first=qMeta.find(m=>!form.querySelector('input[name="'+m.name+'"]:checked'));
+    if(first) $("block_"+first.name).scrollIntoView({behavior:"smooth",block:"center"});
+    return;
+  }
+  $("submitBtn").disabled=true;
+  grade().catch(()=>{ $("submitBtn").disabled=false; $("warn").textContent="Something went wrong. Please try again."; });
+});
+
+async function grade(){
+  const answers={},correctMap={},correctIdx={};
+  const perSec=PRACTICE.map(s=>({correct:0,total:0,title:s.title,letter:s.letter}));
+  qMeta.forEach(m=>{
+    const sel=form.querySelector('input[name="'+m.name+'"]:checked');
+    answers[m.name]=sel?parseInt(sel.value,10):null;
+    perSec[m.secIdx].total++;
+  });
+  await Promise.all(qMeta.map(async m=>{
+    // find the correct option by hashing each choice (revealed for practice)
+    let ci=-1;
+    for(let i=0;i<m.opts.length;i++){ if((await sha256Hex(m.opts[i]))===m.hash){ci=i;break;} }
+    correctIdx[m.name]=ci;
+    correctMap[m.name]=(answers[m.name]!=null && answers[m.name]===ci);
+  }));
+  let correct=0;
+  qMeta.forEach(m=>{ if(correctMap[m.name]){correct++;perSec[m.secIdx].correct++;} });
+  const percent=Math.round(correct/total*100);
+  showResult({correct:correct,total:total,percent:percent,answers:answers,correctMap:correctMap,correctIdx:correctIdx,perSec:perSec});
+}
+
+// ---------- Results ----------
+function gradeWord(p){
+  if(p>=97)return"A+";if(p>=93)return"A";if(p>=90)return"A−";
+  if(p>=87)return"B+";if(p>=83)return"B";if(p>=80)return"B−";
+  if(p>=77)return"C+";if(p>=73)return"C";if(p>=70)return"C−";
+  if(p>=67)return"D+";if(p>=60)return"D";return"F";
+}
+function showResult(rec){
+  $("screen-start").classList.add("hidden");
+  $("screen-exam").classList.add("hidden");
+  const r=$("screen-result");r.classList.remove("hidden");r.classList.add("fade-in");
+  $("resWho").textContent="Practice complete";
+  $("resMeta").textContent=rec.correct+" of "+rec.total+" correct";
+  $("resGrade").textContent="Score: "+gradeWord(rec.percent);
+  const R=74,C=2*Math.PI*R,fg=$("ringFg");
+  fg.style.strokeDasharray=C;fg.style.strokeDashoffset=C;
+  const bd=$("breakdown");bd.innerHTML="";
+  (rec.perSec||[]).forEach(s=>{
+    const p=s.total?Math.round(s.correct/s.total*100):0;
+    const row=document.createElement("div");row.className="brow";
+    row.innerHTML='<span class="bname">'+s.letter+' · '+s.title+'</span>'
+      +'<span class="bbar"><span style="width:'+p+'%"></span></span>'
+      +'<span class="bscore">'+s.correct+'/'+s.total+'</span>';
+    bd.appendChild(row);
+  });
+  window.scrollTo({top:0,behavior:"auto"});
+  setTimeout(()=>{fg.style.strokeDashoffset=C*(1-rec.percent/100);},120);
+  let cur=0;const pctEl=$("resPct");const step=Math.max(1,Math.round(rec.percent/40));
+  const iv=setInterval(()=>{cur+=step;if(cur>=rec.percent){cur=rec.percent;clearInterval(iv);}pctEl.innerHTML=cur+'<small>%</small>';},22);
+  $("reviewBtn").onclick=()=>revealAnswers(rec);
+  const rb=$("retakeBtn"); if(rb) rb.onclick=()=>location.reload();
+}
+
+function revealAnswers(rec){
+  // Practice review: reveal the correct answer (green) and mark a wrong choice (red).
+  qMeta.forEach(m=>{
+    const block=$("block_"+m.name);
+    const chosen=rec.answers[m.name];
+    const ci=rec.correctIdx[m.name];
+    block.querySelectorAll(".opt").forEach(lbl=>{
+      const idx=parseInt(lbl.dataset.idx,10);
+      const input=lbl.querySelector("input");input.disabled=true;
+      lbl.classList.add("locked");lbl.classList.remove("sel");
+      if(idx===ci){ lbl.classList.add("correct"); addTag(lbl, chosen===ci?"Correct":"Answer"); }
+      if(chosen!=null && idx===chosen && chosen!==ci){ input.checked=true; lbl.classList.add("wrong"); addTag(lbl,"Your answer"); }
+      else if(idx===chosen){ input.checked=true; }
+    });
+  });
+  $("submitBtn").parentElement.classList.add("hidden");
+  $("warn").classList.add("hidden");
+  $("barWho").textContent="Practice — answers";
+  $("trackFill").style.width="100%";
+  $("barCount").textContent=rec.percent+"%";
+  $("screen-result").classList.add("hidden");
+  $("screen-exam").classList.remove("hidden");
+  window.scrollTo({top:0,behavior:"auto"});
+}
+function addTag(lbl,text){
+  if(lbl.querySelector(".tag"))return;
+  const t=document.createElement("span");t.className="tag";t.textContent=text;lbl.appendChild(t);
+}
